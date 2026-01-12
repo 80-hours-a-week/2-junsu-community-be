@@ -123,3 +123,29 @@ async def auth_logout():
         "message": "로그아웃 되었습니다.",
         "data": None
     }
+
+# [이메일 중복 체크] (단독 기능)
+async def check_email_duplicate(email: str):
+    is_exist = False
+    for user in fake_users:
+        if user["email"] == email:
+            is_exist = True
+            break
+    
+    if is_exist:
+        return JSONResponse(status_code=409, content={"message": "이미 사용 중인 이메일입니다.", "available": False})
+        
+    return {"message": "사용 가능한 이메일입니다.", "available": True}
+
+# [닉네임 중복 체크] (단독 기능)
+async def check_nickname_duplicate(nickname: str):
+    is_exist = False
+    for user in fake_users:
+        if user["nickname"] == nickname:
+            is_exist = True
+            break
+            
+    if is_exist:
+        return JSONResponse(status_code=409, content={"message": "이미 사용 중인 닉네임입니다.", "available": False})
+        
+    return {"message": "사용 가능한 닉네임입니다.", "available": True}
