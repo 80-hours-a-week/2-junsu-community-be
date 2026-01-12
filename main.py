@@ -1,6 +1,7 @@
-from fastapi import FastAPI, status, HTTPException # HTTPException 추가 필요
+from fastapi import FastAPI, status, Request, HTTPException # HTTPException 추가 필요
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional, List
 import re  # 이메일, 비밀번호 정규식 검증용
 
@@ -20,6 +21,15 @@ class SignupRequest(BaseModel):
 # (참고: 게시글 조회의 경우 GET 방식이므로 별도의 클래스 없이 
 #  함수 인자의 offset, limit으로 처리하는 것이 더 효율적입니다.)
 
+# [설정] 세션 미들웨어 추가 (이 코드가 없으면 로그인이 안 됩니다!)
+# secret_key는 암호화에 쓰이는 비밀번호입니다.
+# 실무에서는 환경변수로 관리
+app.add_middleware(SessionMiddleware, secret_key="your-secret-session-key")
+
+# [로그인 전용 클래스]
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 # ==========================================
 # 2. [Mock Data] 가짜 데이터베이스 (데이터 저장소)
@@ -55,7 +65,7 @@ async def get_posts(offset: int = 0, limit: int = 10):
     }
 
 # ==========================================
-# 3. [Routes - Auth] 회원가입 기능 (강사님 피드백: 부정문 제거)
+# 4. [Routes - Auth] 회원가입 기능 (강사님 피드백: 부정문 제거)
 # ==========================================
 
 # ... (위쪽 import 및 모델 정의는 동일) ...
@@ -133,4 +143,87 @@ async def signup(user_data: SignupRequest):
             "nickname": user_data.nickname,
             "email": user_data.email
         }
+    }
+
+# ==========================================
+# 5. [Routes - Login] 로그인 기능 (설계도 완벽 반영)
+# ==========================================
+
+@app.post("/v1/auth/login", status_code=status.HTTP_200_OK)
+async def login(request: Request, login_data: LoginRequest):
+    """
+    설계도 반영: 로그인 (세션 방식)
+    - 성공 (200): LOGIN_SUCCESS
+    - 실패 (400): LOGIN_FAILED (이메일 없음 또는 비밀번호 불일치)
+    """
+    
+    # 1. 사용자 조회 (이메일로 찾기)
+    matched_user = None
+    for user in fake_users:
+        if user["email"] == login_data.email:
+            matched_user = user
+            break
+    
+    # 2. 예외 처리: 사용자가 없거나(None) 비밀번호가 틀린 경우(!=)
+    # 설계도상 '로그인 실패'는 보통 400 Bad Request로 처리합니다.
+    if matched_user is None or matched_user["password"] != login_data.password:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "code": "LOGIN_FAILED",
+                "message": "이메일 또는 비밀번호가 일치하지 않습니다.",
+                "data": None
+            }
+        )
+
+    # 3. [세션 생성] 로그인 성공 처리
+    request.session["user_email"] = matched_user["email"]
+    request.session["user_nickname"] = matched_user["nickname"]
+    
+    # 4. 성공 응답 반환
+    return {
+        "code": "LOGIN_SUCCESS",
+        "message": "로그인에 성공했습니다.",
+        "data": {
+            "email": matched_user["email"],
+            "nickname": matched_user["nickname"]
+        }
+    }
+
+
+# ==========================================
+# 6. [Routes - Logout] 로그아웃 기능 (설계도 완벽 반영)
+# ==========================================
+
+@app.post("/v1/auth/logout", status_code=status.HTTP_200_OK)
+async def logout(request: Request):
+    """
+    설계도 반영: 로그아웃
+    - 성공 (200): LOGOUT_SUCCESS
+    - 실패 (401): UNAUTHORIZED_ACCESS (로그인 상태가 아님)
+    """
+    
+    # 1. 세션 확인 (로그인 여부 검사)
+    user_email = request.session.get("user_email")
+    
+    # 2. 예외 처리: 세션 정보가 없는 경우 (로그인 안 함)
+    # 설계도에 명시된 401 Unauthorized 에러를 반환합니다.
+    if user_email is None:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "code": "UNAUTHORIZED_ACCESS",
+                "message": "로그인이 필요한 기능입니다.",
+                "data": None
+            }
+        )
+    
+    # 3. 로그아웃 처리 (세션 삭제)
+    request.session.clear()
+    
+    # 4. 성공 응답 반환
+    return {
+        "code": "LOGOUT_SUCCESS",
+        "message": "로그아웃 되었습니다.",
+        "data": None
     }
