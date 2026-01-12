@@ -1,6 +1,6 @@
 # routers/auth.py
 from fastapi import APIRouter, status
-from controllers.auth import auth_signup, auth_login
+from controllers.auth import auth_signup, auth_login, auth_logout
 from models.auth import SignupRequest, LoginRequest
 
 router = APIRouter(prefix="/v1/auth")
@@ -13,3 +13,8 @@ async def signup(user_data: SignupRequest):
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(login_data: LoginRequest):
     return await auth_login(login_data)
+
+# [로그아웃]
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout():
+    return await auth_logout()

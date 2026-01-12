@@ -111,3 +111,15 @@ async def auth_login(login_data: LoginRequest):
             "nickname": matched_user["nickname"]
         }
     }
+
+# [로그아웃]
+async def auth_logout():
+    """
+    로그아웃 비즈니스 로직
+    - 현재 세션이 없으므로, 단순히 성공 응답만 반환합니다.
+    """
+    return {
+        "code": "LOGOUT_SUCCESS",
+        "message": "로그아웃 되었습니다.",
+        "data": None
+    }
