@@ -1,130 +1,100 @@
+# controllers/auth.py
+
 from fastapi import status
 from fastapi.responses import JSONResponse
 import re
-
-# 가짜 DB와 모델 가져오기
 from database import fake_users 
 from models.auth import SignupRequest, LoginRequest
 
+# ==========================================
+# 1. 회원가입
+# ==========================================
 async def auth_signup(user_data: SignupRequest):
-    """
-    회원가입 비즈니스 로직 (요리사)
-    """
     
-    # 1. 필수값 누락 검증 (명시적 확인)
-    # "만약 하나라도 비어있다면" -> 에러
+    # 필수값 검증
     if user_data.email == "" or user_data.password == "" or user_data.nickname == "":
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "code": "REQUIRED_FIELDS_MISSING",
-                "message": "모든 항목을 입력해주세요.",
-                "data": None
-            }
-        )
+        return JSONResponse(status_code=400, content={
+            "code": "REQUIRED_FIELDS_MISSING",
+            "message": "필수 입력 항목이 누락되었습니다.",
+            "data": None
+        })
 
-    # 2. 이메일 형식 검증
-    # "매치되는 게 없으면(None)" -> 에러
-    email_regex = r'^[a-zA-Z0-9+_\-.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-    if re.match(email_regex, user_data.email) is None:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "code": "INVALID_EMAIL_FORMAT",
-                "message": "이메일 형식이 올바르지 않습니다.",
-                "data": None
-            }
-        )
+    # 이메일 형식
+    if re.match(r'^[a-zA-Z0-9+_\-.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', user_data.email) is None:
+        return JSONResponse(status_code=400, content={
+            "code": "INVALID_EMAIL_FORMAT",
+            "message": "이메일 형식이 올바르지 않습니다.",
+            "data": None
+        })
 
-    # 3. 비밀번호 강도 검증 (추가된 부분)
-    pw_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$'
-    if re.match(pw_regex, user_data.password) is None:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "code": "WEAK_PASSWORD",
-                "message": "비밀번호는 영문, 숫자, 특수문자 포함 8~20자여야 합니다.",
-                "data": None
-            }
-        )
+    # 비밀번호 형식
+    if re.match(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$', user_data.password) is None:
+        return JSONResponse(status_code=400, content={
+            "code": "WEAK_PASSWORD",
+            "message": "비밀번호는 영문, 숫자, 특수문자 포함 8~20자여야 합니다.",
+            "data": None
+        })
 
-    # 4. 중복 이메일 체크 (반복문 사용)
-    is_duplicate = False
+    # 이메일 중복 체크 (가입 시점)
     for user in fake_users:
         if user["email"] == user_data.email:
-            is_duplicate = True
-            break
-            
-    if is_duplicate is True:
-        return JSONResponse(
-            status_code=status.HTTP_409_CONFLICT,
-            content={
+            return JSONResponse(status_code=409, content={
                 "code": "ALREADY_EXIST_EMAIL",
                 "message": "이미 가입된 이메일입니다.",
                 "data": None
-            }
-        )
+            })
 
-    # 5. 저장 (메모리에 추가)
+    # 저장
     fake_users.append(user_data.model_dump())
     
     return {
         "code": "SIGNUP_SUCCESS",
-        "message": "회원가입 완료",
-        "data": {
-            "email": user_data.email,
-            "nickname": user_data.nickname
-        }
+        "message": "회원가입이 완료되었습니다.",
+        "data": None  # [설계도 준수] 성공 시 데이터는 null
     }
 
-# [로그인]
+# ==========================================
+# 2. 로그인
+# ==========================================
 async def auth_login(login_data: LoginRequest):
-    """
-    로그인 비즈니스 로직 (단순 검증)
-    """
     
-    # 1. 사용자 조회 (이메일로 찾기)
-    # fake_users 리스트를 뒤져서 이메일이 같은 사람을 찾습니다.
     matched_user = None
     for user in fake_users:
         if user["email"] == login_data.email:
             matched_user = user
             break
     
-    # 2. 검증 (유저가 없거나, 비밀번호가 틀리면 실패)
     if matched_user is None or matched_user["password"] != login_data.password:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "code": "LOGIN_FAILED",
-                "message": "이메일 또는 비밀번호가 일치하지 않습니다.",
-                "data": None
-            }
-        )
+        return JSONResponse(status_code=400, content={
+            "code": "LOGIN_FAILED",
+            "message": "이메일 또는 비밀번호가 일치하지 않습니다.",
+            "data": None
+        })
 
-    # 3. 성공 (세션/쿠키 없이 성공 메시지만 반환)
+    # [중요] 강사님 지시(세션X)로 토큰은 발급하지 않지만,
+    # 응답 포맷은 최대한 설계도와 비슷하게 유지합니다.
     return {
         "code": "LOGIN_SUCCESS",
         "message": "로그인에 성공했습니다.",
         "data": {
-            "email": matched_user["email"],
-            "nickname": matched_user["nickname"]
+            "userId": matched_user.get("id", 1), # ID가 없으면 임시로 1
+            "email": matched_user["email"]
         }
     }
 
-# [로그아웃]
+# ==========================================
+# 3. 로그아웃
+# ==========================================
 async def auth_logout():
-    """
-    로그아웃 비즈니스 로직
-    - 현재 세션이 없으므로, 단순히 성공 응답만 반환합니다.
-    """
     return {
         "code": "LOGOUT_SUCCESS",
         "message": "로그아웃 되었습니다.",
         "data": None
     }
 
-# [이메일 중복 체크] (단독 기능)
+# ==========================================
+# 4. 중복 체크 (설계도 포맷 적용)
+# ==========================================
 async def check_email_duplicate(email: str):
     is_exist = False
     for user in fake_users:
@@ -133,11 +103,18 @@ async def check_email_duplicate(email: str):
             break
     
     if is_exist:
-        return JSONResponse(status_code=409, content={"message": "이미 사용 중인 이메일입니다.", "available": False})
+        return JSONResponse(status_code=409, content={
+            "code": "DUPLICATE_EMAIL",
+            "message": "이미 사용 중인 이메일입니다.",
+            "data": {"available": False}
+        })
         
-    return {"message": "사용 가능한 이메일입니다.", "available": True}
+    return {
+        "code": "AVAILABLE_EMAIL",
+        "message": "사용 가능한 이메일입니다.",
+        "data": {"available": True}
+    }
 
-# [닉네임 중복 체크] (단독 기능)
 async def check_nickname_duplicate(nickname: str):
     is_exist = False
     for user in fake_users:
@@ -146,6 +123,14 @@ async def check_nickname_duplicate(nickname: str):
             break
             
     if is_exist:
-        return JSONResponse(status_code=409, content={"message": "이미 사용 중인 닉네임입니다.", "available": False})
+        return JSONResponse(status_code=409, content={
+            "code": "DUPLICATE_NICKNAME",
+            "message": "이미 사용 중인 닉네임입니다.",
+            "data": {"available": False}
+        })
         
-    return {"message": "사용 가능한 닉네임입니다.", "available": True}
+    return {
+        "code": "AVAILABLE_NICKNAME",
+        "message": "사용 가능한 닉네임입니다.",
+        "data": {"available": True}
+    }
