@@ -4,7 +4,7 @@ import re
 
 # 가짜 DB와 모델 가져오기
 from database import fake_users 
-from models.auth import SignupRequest
+from models.auth import SignupRequest, LoginRequest
 
 async def auth_signup(user_data: SignupRequest):
     """
@@ -74,5 +74,40 @@ async def auth_signup(user_data: SignupRequest):
         "data": {
             "email": user_data.email,
             "nickname": user_data.nickname
+        }
+    }
+
+# [로그인]
+async def auth_login(login_data: LoginRequest):
+    """
+    로그인 비즈니스 로직 (단순 검증)
+    """
+    
+    # 1. 사용자 조회 (이메일로 찾기)
+    # fake_users 리스트를 뒤져서 이메일이 같은 사람을 찾습니다.
+    matched_user = None
+    for user in fake_users:
+        if user["email"] == login_data.email:
+            matched_user = user
+            break
+    
+    # 2. 검증 (유저가 없거나, 비밀번호가 틀리면 실패)
+    if matched_user is None or matched_user["password"] != login_data.password:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "code": "LOGIN_FAILED",
+                "message": "이메일 또는 비밀번호가 일치하지 않습니다.",
+                "data": None
+            }
+        )
+
+    # 3. 성공 (세션/쿠키 없이 성공 메시지만 반환)
+    return {
+        "code": "LOGIN_SUCCESS",
+        "message": "로그인에 성공했습니다.",
+        "data": {
+            "email": matched_user["email"],
+            "nickname": matched_user["nickname"]
         }
     }
