@@ -17,7 +17,7 @@ def validate_password(password: str) -> bool:
     pw_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$'
     return bool(re.match(pw_regex, password))
 
-# 3. 닉네임 형식 검사 (설계도 반영)
+# 3. 닉네임 형식 검사
 # 조건: 공백이나 특수문자 불가 (한글, 영문, 숫자만 허용)
 def validate_nickname(nickname: str) -> bool:
     # ^[가-힣a-zA-Z0-9]+$ -> 한글, 영대소문자, 숫자만 있으면 통과

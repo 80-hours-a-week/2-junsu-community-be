@@ -18,6 +18,6 @@ fake_posts = []
 # 3. 댓글 데이터
 fake_comments = []
 
-# 4. [New] 세션 저장소 (로그인 상태 유지용)
+# 4. 세션 저장소 (로그인 상태 유지용)
 # 형식: { "session_id_문자열": "user_email" }
 fake_sessions = {}
