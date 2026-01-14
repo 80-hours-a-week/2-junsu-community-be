@@ -1,5 +1,3 @@
-# routers/user.py
-
 from fastapi import APIRouter, status
 from controllers.user import get_user_info
 

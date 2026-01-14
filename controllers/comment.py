@@ -15,6 +15,5 @@ async def create_comment(post_id: int, comment_data: CreateCommentRequest, user:
     return {"code": "COMMENT_CREATED", "message": "댓글 등록 완료", "data": new_comment}
 
 async def get_comments(post_id: int):
-    # 해당 게시글의 댓글만 필터링
     comments = [c for c in fake_comments if c["postId"] == post_id]
     return {"code": "SUCCESS", "data": comments}

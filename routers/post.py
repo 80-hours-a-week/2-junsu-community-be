@@ -9,10 +9,10 @@ router = APIRouter(prefix="/v1/posts")
 async def get_posts(offset: int = 0, limit: int = 10):
     return await get_posts_list(offset, limit)
 
-# [중요] 글쓰기는 로그인한 사람만 가능!
+# [중요] 글쓰기는 로그인한 사람만 가능
 @router.post("", status_code=201)
 async def write_post(
     post_data: CreatePostRequest, 
-    user: dict = Depends(get_current_user) # 쿠키 없으면 여기서 튕김
+    user: dict = Depends(get_current_user)
 ):
     return await create_post(post_data, user)

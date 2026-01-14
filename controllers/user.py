@@ -28,7 +28,7 @@ async def get_user_info(email: str):
             }
         )
 
-    # 3. 있으면 성공 (비밀번호는 빼고 줍니다!)
+    # 3. 있으면 성공
     return {
         "code": "GET_USER_SUCCESS",
         "message": "사용자 정보 조회 성공",

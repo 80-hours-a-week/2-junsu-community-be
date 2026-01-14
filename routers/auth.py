@@ -10,7 +10,6 @@ async def signup(user_data: SignupRequest):
 
 @router.post("/login", status_code=200)
 async def login(response: Response, login_data: LoginRequest):
-    # response 객체를 넘겨줘야 쿠키를 심을 수 있음
     return await auth_login(response, login_data)
 
 @router.post("/logout", status_code=200)
