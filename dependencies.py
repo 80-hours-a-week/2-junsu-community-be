@@ -1,5 +1,3 @@
-# dependencies.py
-
 from fastapi import Request, HTTPException, status
 from database import fake_sessions, fake_users
 
