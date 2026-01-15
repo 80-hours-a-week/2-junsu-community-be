@@ -1,6 +1,7 @@
 # utils.py
 
 import re
+from fastapi import HTTPException
 
 # 1. 이메일 형식 검사
 def validate_email(email: str) -> bool:
@@ -23,3 +24,10 @@ def validate_nickname(nickname: str) -> bool:
     # ^[가-힣a-zA-Z0-9]+$ -> 한글, 영대소문자, 숫자만 있으면 통과
     nickname_regex = r'^[가-힣a-zA-Z0-9]+$'
     return bool(re.match(nickname_regex, nickname))
+
+class APIException(HTTPException):
+    def __init__(self, code: str, message: str, status_code: int):
+        self.code = code
+        self.message = message
+        self.data = None
+        super().__init__(status_code=status_code, detail={"code": code, "message": message, "data": None})
