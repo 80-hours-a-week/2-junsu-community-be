@@ -4,23 +4,33 @@ from fastapi import status
 from database import fake_users
 from utils import validate_email, APIException # 유틸 도구 가져오기
 
-async def get_user_info(email: str):
+async def get_my_info(user: dict):
     """
-    사용자 정보 조회 로직
+    내 정보 조회 (세션 기반)
     """
-    
-    # 1. [400] 필수값 누락 체크 (설계도: REQUIRED_FIELDS_MISSING)
-    if not email:
-        raise APIException(code="REQUIRED_FIELDS_MISSING", message="이메일 정보가 누락되었습니다.", status_code=400)
+    # 5. [403] 탈퇴한 회원 접근 금지 (get_current_user에서 처리되지 않았다면)
+    if user.get("is_deleted") == True:
+        raise APIException(code="FORBIDDEN", message="접근이 거부되었습니다.", status_code=403)
 
-    # 2. [400] 이메일 형식 검사 (설계도: INVALID_EMAIL_FORMAT)
-    if not validate_email(email):
-        raise APIException(code="INVALID_EMAIL_FORMAT", message="유효하지 않은 이메일 형식입니다.", status_code=400)
+    return {
+        "code": "GET_MY_INFO_SUCCESS",
+        "message": "내 정보 조회 성공",
+        "data": {
+            "userId": user["userId"],
+            "email": user["email"],
+            "nickname": user["nickname"],
+            "profileimage": user.get("profileimage")
+        }
+    }
 
+async def get_user_by_id(user_id: int):
+    """
+    특정 사용자 정보 조회 (ID 기반)
+    """
     # 3. 사용자 찾기
     matched_user = None
     for user in fake_users:
-        if user["email"] == email:
+        if user["userId"] == user_id:
             matched_user = user
             break
     
@@ -37,6 +47,7 @@ async def get_user_info(email: str):
         "code": "GET_USER_SUCCESS",
         "message": "사용자 정보 조회 성공",
         "data": {
+            "userId": matched_user["userId"],
             "email": matched_user["email"],
             "nickname": matched_user["nickname"],
             "profileimage": matched_user.get("profileimage")
