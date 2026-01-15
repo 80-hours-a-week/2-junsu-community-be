@@ -16,4 +16,4 @@ async def create_comment(post_id: int, comment_data: CreateCommentRequest, user:
 
 async def get_comments(post_id: int):
     comments = [c for c in fake_comments if c["postId"] == post_id]
-    return {"code": "SUCCESS", "data": comments}
+    return {"code": "SUCCESS", "message": "댓글 목록 조회 성공", "data": comments}

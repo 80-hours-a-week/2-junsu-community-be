@@ -5,6 +5,7 @@ from models.post import CreatePostRequest, UpdatePostRequest
 async def get_posts_list(offset: int, limit: int):
     return {
         "code": "SUCCESS",
+        "message": "게시물 목록 조회 성공",
         "data": {
             "posts": fake_posts[offset : offset + limit],
             "totalCount": len(fake_posts)
@@ -24,4 +25,4 @@ async def create_post(post_data: CreatePostRequest, user: dict):
         "viewCount": 0
     }
     fake_posts.append(new_post)
-    return {"code": "POST_CREATED", "data": {"postId": new_id}}
+    return {"code": "POST_CREATED", "message": "게시물이 등록되었습니다.", "data": {"postId": new_id}}

@@ -1,8 +1,7 @@
 # controllers/user.py
 
-from fastapi import status
 from database import fake_users
-from utils import validate_email, APIException # 유틸 도구 가져오기
+from utils import APIException
 
 async def get_my_info(user: dict):
     """
