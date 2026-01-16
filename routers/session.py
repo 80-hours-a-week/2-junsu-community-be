@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, Request, status, Body
+from fastapi import APIRouter, Response, Request, Body
 from controllers.auth import auth_login, auth_logout
 
 router = APIRouter(prefix="/v1/sessions")

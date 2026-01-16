@@ -78,7 +78,7 @@ async def auth_login(response: Response, login_data: dict):
 # 3. 로그아웃
 # ==========================================
 async def auth_logout(response: Response, session_id: str):
-    if session_id in fake_sessions:
+    if session_id and session_id in fake_sessions:
         del fake_sessions[session_id]
     
     response.delete_cookie("session_id")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Body
+from fastapi import APIRouter, Depends, Body
 from controllers.comment import create_comment, get_comments
 from dependencies import get_current_user
 

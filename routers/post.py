@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Body
+from fastapi import APIRouter, Depends, Body
 from controllers.post import get_posts_list, create_post as create_post_controller
 from dependencies import get_current_user # 로그인 체크기
 
