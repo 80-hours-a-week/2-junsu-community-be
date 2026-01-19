@@ -4,6 +4,29 @@ from database import fake_users, fake_sessions
 from utils import validate_email, validate_password, validate_nickname, APIException
 
 # ==========================================
+# 0. 이메일 중복 체크
+# ==========================================
+async def check_email_availability(email: str | None):
+    # 1. 이메일 파라미터 누락
+    if not email:
+        raise APIException(code="EMAIL_PARAM_MISSING", message="검사할 이메일 주소를 입력해주세요.", status_code=400)
+    
+    # 2. 이메일 형식 검사
+    if not validate_email(email):
+        raise APIException(code="INVALID_EMAIL_FORMAT", message="올바른 이메일 형식이 아닙니다.", status_code=400)
+    
+    # 3. 이메일 중복 체크
+    for user in fake_users:
+        if user["email"] == email:
+            raise APIException(code="ALREADY_EXIST_EMAIL", message="이미 사용 중인 이메일입니다.", status_code=409)
+    
+    return {
+        "code": "EMAIL_AVAILABLE",
+        "message": "사용 가능한 이메일입니다.",
+        "data": None
+    }
+
+# ==========================================
 # 1. 회원가입
 # ==========================================
 async def auth_signup(user_data: dict):
