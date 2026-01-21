@@ -21,3 +21,7 @@ fake_comments = []
 # 4. 세션 저장소 (로그인 상태 유지용)
 # 형식: { "session_id_문자열": "user_email" }
 fake_sessions = {}
+
+# 5. 좋아요 데이터
+# 형식: [{"postId": 1, "userEmail": "user@test.com"}, ...]
+fake_likes = []

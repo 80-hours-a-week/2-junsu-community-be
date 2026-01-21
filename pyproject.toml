@@ -1,18 +1,25 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "junsu-community-be"
+name = "2-junsu-community-be"
 version = "0.1.0"
-description = "Community Backend API"
+description = "Community Backend API with FastAPI"
+authors = [
+    {name = "Junsu", email = "junsu@example.com"},
+]
+license = {text = "MIT"}
 requires-python = ">=3.9"
+readme = "README.md"
+
 dependencies = [
-    "fastapi",
-    "uvicorn[standard]",
-    "pydantic",
-    "python-multipart"
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.20.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.6",
+    "requests>=2.31.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

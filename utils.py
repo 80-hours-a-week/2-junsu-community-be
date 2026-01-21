@@ -11,7 +11,7 @@ def validate_email(email: str) -> bool:
 # 2. 비밀번호 강도 검사
 # 조건: 영문, 숫자, 특수문자 포함, 8~20자
 def validate_password(password: str) -> bool:
-    if len(password) < 8 or len(password) > 20:
+    if not (8 <= len(password) <= 20):
         return False
     
     # 정규식: 영문(?=.*[A-Za-z]), 숫자(?=.*\d), 특수문자(?=.*[@$!%*#?&]) 각각 최소 1개 포함
@@ -24,6 +24,11 @@ def validate_nickname(nickname: str) -> bool:
     # ^[가-힣a-zA-Z0-9]+$ -> 한글, 영대소문자, 숫자만 있으면 통과
     nickname_regex = r'^[가-힣a-zA-Z0-9]+$'
     return bool(re.match(nickname_regex, nickname))
+
+# 4. 닉네임 길이 검사
+# 조건: 최대 10자
+def validate_nickname_length(nickname: str, max_length: int = 10) -> bool:
+    return len(nickname) <= max_length
 
 class APIException(HTTPException):
     def __init__(self, code: str, message: str, status_code: int):
