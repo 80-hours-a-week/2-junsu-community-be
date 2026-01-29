@@ -168,7 +168,7 @@ async def create_post(post_data: dict, user: dict):
 # ==========================================
 # 3. 게시글 상세 조회
 # ==========================================
-async def get_post_detail(post_id: int):
+async def get_post_detail(post_id: int, current_user: dict | None = None):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
@@ -215,11 +215,18 @@ async def get_post_detail(post_id: int):
         cursor.execute(comment_count_query, (post_id,))
         comment_count = cursor.fetchone()["count"]
         
+        # 5. 현재 사용자가 좋아요 눌렀는지 확인
+        is_liked = False
+        if current_user and current_user.get("userId"):
+            like_check_query = "SELECT 1 FROM post_likes WHERE post_id = %s AND user_id = %s"
+            cursor.execute(like_check_query, (post_id, current_user["userId"]))
+            is_liked = cursor.fetchone() is not None
+        
         # 날짜 포맷
         if isinstance(target_post["createdAt"], datetime):
             target_post["createdAt"] = target_post["createdAt"].isoformat()
 
-        # 5. 성공 응답
+        # 6. 성공 응답
         return {
             "code": "GET_POST_DETAIL_SUCCESS",
             "message": "게시글 정보를 성공적으로 불러왔습니다.",
@@ -234,7 +241,8 @@ async def get_post_detail(post_id: int):
                 "viewCount": target_post["viewCount"],
                 "likeCount": like_count,
                 "commentCount": comment_count,
-                "createdAt": target_post["createdAt"]
+                "createdAt": target_post["createdAt"],
+                "isLiked": is_liked
             }
         }
     except Exception as e:

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from controllers.post import get_posts_list, create_post as create_post_controller, get_post_detail, update_post, delete_post, like_post, unlike_post
-from dependencies import get_current_user
+from dependencies import get_current_user, get_optional_user
 from models.post import PostCreate, PostUpdate
 
 router = APIRouter(prefix="/v1/posts")
@@ -10,8 +10,8 @@ async def get_posts(offset: int = 0, limit: int = 10):
     return await get_posts_list(offset, limit)
 
 @router.get("/{post_id}", status_code=status.HTTP_200_OK)
-async def get_post(post_id: int):
-    return await get_post_detail(post_id)
+async def get_post(post_id: int, user: dict | None = Depends(get_optional_user)):
+    return await get_post_detail(post_id, user)
 
 # 게시물 작성은 로그인한 사람만 가능
 @router.post("", status_code=201)

@@ -67,3 +67,6 @@ async def get_current_user_optional(request: Request):
         return await get_current_user(request)
     except APIException:
         return None
+
+# 별칭 (라우터에서 사용)
+get_optional_user = get_current_user_optional
