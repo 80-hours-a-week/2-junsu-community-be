@@ -24,7 +24,6 @@ async def get_posts_list(offset: int, limit: int):
                 u.id as authorId,
                 u.nickname as writer,
                 u.email as writerEmail,
-                u.email as writerEmail,
                 (SELECT file_url FROM files WHERE post_id = p.id AND file_type = 'post' AND deleted_at IS NULL LIMIT 1) as fileUrl,
                 (SELECT file_url FROM files WHERE user_id = u.id AND file_type = 'profile' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1) as authorProfileImage,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likeCount,
