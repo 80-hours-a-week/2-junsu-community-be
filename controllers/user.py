@@ -199,11 +199,27 @@ async def delete_user(current_user: dict):
     
     try:
         # 2. Soft Delete 처리 (is_deleted = 1, deleted_at = NOW)
-        # 닉네임 유니크를 어떡하지? 탈퇴해도 닉네임 유니크 유지가 필요하면 그대로 둠.
-        # 여기선 is_deleted=True로 업데이트
+        # 닉네임, 이메일 유니크 제약조건 때문에 변경 필요 (재가입 허용을 위해)
+        import time
         
-        update_query = "UPDATE users SET is_deleted = TRUE, deleted_at = NOW() WHERE id = %s"
-        cursor.execute(update_query, (user_id,))
+        timestamp = int(time.time())
+        
+        # email -> deleted_{timestamp}_{user_id}_{email} (최대 길이 주의, 여기선 단순화)
+        # nickname -> del_{user_id} (PK는 유니크하므로 절대 중복 안됨)
+        
+        # 원래 이메일, 닉네임 보관하고 싶으면 별도 테이블이나 컬럼 필요하지만, 여기선 단순히 변경.
+        new_email = f"deleted_{timestamp}_{user_id}_{current_user['email']}"[:250] 
+        new_nickname = f"del_{user_id}" 
+        
+        update_query = """
+            UPDATE users 
+            SET is_deleted = TRUE, 
+                deleted_at = NOW(),
+                email = %s,
+                nickname = %s
+            WHERE id = %s
+        """
+        cursor.execute(update_query, (new_email, new_nickname, user_id))
         
         # 3. 해당 유저의 세션 모두 삭제
         del_session_query = "DELETE FROM sessions WHERE user_id = %s"
@@ -213,7 +229,7 @@ async def delete_user(current_user: dict):
         
         return {
             "code": "DELETE_USER_SUCCESS",
-            "message": "회원 탈퇴가 안전하게 처리되었습니다. 그동안 이용해주셔서 감사합니다.",
+            "message": "회원 탈퇴가 안전하게 처리되었습니다. 언제든 다시 가입하실 수 있습니다.",
             "data": None
         }
     except Exception as e:
