@@ -3,6 +3,7 @@
 from datetime import datetime
 from database import get_db_connection
 from utils import APIException
+import mysql.connector
 
 async def get_posts_list(offset: int, limit: int):
     conn = get_db_connection()
@@ -183,7 +184,6 @@ async def get_post_detail(post_id: int):
                 p.content, 
                 p.view_count as viewCount, 
                 p.created_at as createdAt,
-                u.id as authorId, 
                 u.id as authorId, 
                 u.nickname as writer,
                 (SELECT file_url FROM files WHERE user_id = u.id AND file_type = 'profile' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1) as authorProfileImage,

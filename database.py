@@ -24,13 +24,3 @@ def get_db_cursor(dictionary=True):
     """
     conn = get_db_connection()
     return conn, conn.cursor(dictionary=dictionary)
-
-# ==========================================
-# 기존 Fake 데이터 (주석 처리 또는 백업)
-# ==========================================
-
-# fake_users = [...]
-# fake_posts = []
-# fake_comments = []
-# fake_sessions = {}
-# fake_likes = []

@@ -118,7 +118,7 @@ async def auth_signup(user_data: dict):
              raise APIException(code="ALREADY_EXIST_NICKNAME", message="이미 사용 중인 닉네임입니다.", status_code=409)
 
         # 6. 저장
-        # PASSWORD HASHING should be here in real app, but using plaintext as per "basics" request
+        # 실제 앱에서는 비밀번호 해싱(Hashing)이 필수이지만, 과제 요건상 평문(Plaintext)으로 저장합니다.
         insert_query = "INSERT INTO users (email, password, nickname) VALUES (%s, %s, %s)"
         cursor.execute(insert_query, (user_data["email"], user_data["password"], user_data["nickname"]))
         user_id = cursor.lastrowid

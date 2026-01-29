@@ -204,10 +204,10 @@ async def delete_user(current_user: dict):
         
         timestamp = int(time.time())
         
-        # email -> deleted_{timestamp}_{user_id}_{email} (최대 길이 주의, 여기선 단순화)
-        # nickname -> del_{user_id} (PK는 유니크하므로 절대 중복 안됨)
+        # 이메일 -> deleted_{timestamp}_{user_id}_{email} (유니크 제약 충돌 방지)
+        # 닉네임 -> del_{user_id} (유니크 제약 충돌 방지)
         
-        # 원래 이메일, 닉네임 보관하고 싶으면 별도 테이블이나 컬럼 필요하지만, 여기선 단순히 변경.
+        # 실제 서비스에서는 별도의 탈퇴 테이블이나 컬럼을 사용하는 것이 좋지만, 여기서는 간단히 변경하여 처리합니다.
         new_email = f"deleted_{timestamp}_{user_id}_{current_user['email']}"[:250] 
         new_nickname = f"del_{user_id}" 
         
