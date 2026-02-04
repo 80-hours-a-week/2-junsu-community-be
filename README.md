@@ -423,3 +423,5 @@ type: "post" | "profile"
 <p align="center">
   Made with ❤️ by junsu
 </p>
+
+이상입니다.
